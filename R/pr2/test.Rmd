@@ -1,0 +1,133 @@
+---
+title: "Test"
+author: "Юрченков Иван Александрович"
+date: "18 02 2022"
+output: word_document
+---
+
+Код на R к заданию №1
+
+```{r}
+x <- 5
+y = x + 3
+print(x)
+print(y)
+```
+
+
+
+
+```{r}
+vec_1 <- c(1, 0, 2, 3, 6, 8, 12, 15, 0, NA, NA, 9, 4, 16, 2, 0)
+print(vec_1)
+```
+
+
+```{r}
+print(vec_1[1])
+```
+
+
+```{r}
+print(vec_1[length(vec_1)])
+```
+
+
+```{r}
+print(vec_1[3:5])
+```
+
+
+```{r}
+print(which(vec_1 == 2))
+```
+
+
+```{r}
+print(which(vec_1 > 4))
+```
+
+
+```{r}
+print(which(vec_1 %% 3 == 0))
+```
+
+
+```{r}
+print(which( (vec_1 %% 3 == 0) & (vec_1 > 4) ))
+```
+
+
+```{r}
+library(magrittr)
+
+(vec_1 > 4) %>% 
+    which() %>% 
+    print()
+```
+
+
+```{r}
+((vec_1 < 1) | (vec_1 > 5)) %>% 
+    which() %>% 
+    print()
+
+```
+
+
+```{r}
+(vec_1 == 0) %>% 
+    which() %>% 
+    print()
+```
+
+
+```{r}
+((vec_1 <= 8) & (vec_1 >= 2)) %>% 
+    which() %>%
+    print()
+```
+
+
+```{r}
+vec_1[vec_1 != 2][order(vec_1[vec_1 != 2], na.last = TRUE)]
+```
+
+## Задание №8
+
+```{r}
+N <- 10
+P <- 2.32
+
+x <- as.numeric(readLines(con = "coords.txt", n = N, encoding = "UTF-8"))
+```
+
+```{r}
+print(x)
+print(order(x))
+print(x[order(x, na.last = T)])
+```
+
+
+### Lp норма
+
+```{r}
+result <- sum(abs(x)^P)^(1/P)
+```
+
+### Запись в файл
+
+```{r}
+write(x = result, file = "result.txt")
+```
+
+```{r}
+write(x = diff(x), file = "result.txt", append = T)
+write(x = diff(diff(x)), file = "result.txt", append = T)
+```
+
+
+
+
+
+

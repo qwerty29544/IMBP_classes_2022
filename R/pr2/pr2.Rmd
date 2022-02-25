@@ -1,0 +1,169 @@
+---
+title: "Функции, условные конструкции, фреймы данных"
+author: "Юрченков Иван Александрович"
+date: "18 02 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Условия
+
+```{r}
+if (TRUE) {
+    
+} else {
+    
+}
+
+
+
+if (TRUE) {
+    
+} else if (FALSE) {
+    
+} else {
+    
+}
+
+```
+
+```{r}
+if (c(1, 4, 5) > 3) {
+    print("ORAOROROAROAORO")
+}
+
+
+```
+
+```{r}
+x = ifelse(c(1, 4, 5) > 3, 1, 2)
+
+print(x)
+```
+
+## Циклы
+
+```{r}
+for (index in c(1, 4, 8, 12)) {
+    print(index)
+}
+
+for (index in paste0("Студент", 1:25)) {
+    print(index)
+}
+```
+
+```{r}
+for (ind in -12:12) {
+    if (ind < 0) {
+        next
+    } else {
+        print(ind)
+    }
+}
+print("\n")
+for (ind in -12:12) {
+    if (ind < 0) {
+        next
+    } else {
+        print(ind)
+        break
+    }
+}
+```
+
+```{r}
+repeat {
+    if (T)
+        break
+}
+```
+
+## Функции
+
+```{r}
+func1 <- function(arg1, arg2, ...) {
+    return(arg1 + arg2)
+}
+
+func1(1:12, 12:23)
+```
+
+```{r}
+get("func1")(c(5, 7), c(6, 9))
+```
+
+
+## Работа с данными
+
+
+```{r}
+library(readr)
+catalog <- read_delim("R/pr2/catalog.csv", 
+    delim = "\t", escape_double = FALSE, 
+    col_types = cols(`Код товара` = col_character()), 
+    trim_ws = TRUE)
+View(catalog)
+```
+
+
+```{r}
+catalog2 <- read.csv(file="./catalog.csv", header = T, sep = "\t", dec = ".", encoding = "UTF-8")
+```
+
+```{r}
+GAZ <- read.csv("https://raw.githubusercontent.com/qwerty29544/RpracticeBook/master/2Data/01FlatTables/GAZ.csv", 
+                header = T, 
+                sep = "\t", 
+                encoding = "UTF-8", 
+                dec = ",")
+```
+
+```{r}
+GAZ
+```
+
+```{r}
+str(GAZ)
+```
+
+```{r}
+GAZ[GAZ$ID == "111",]
+```
+
+
+## Дата время
+
+```{r}
+as.numeric(as.Date("1970-01-01"))
+```
+
+```{r}
+dates_GAZ <- as.Date(GAZ$дата.замера, format = "%d/%m/%Y")
+```
+
+
+```{r}
+as.numeric(dates_GAZ)
+```
+
+```{r}
+head(weekdays(dates_GAZ))
+```
+
+```{r}
+gsub()## Замена подстроки по регулярке
+substring("1900-01-01", first = 1, last = 4)
+```
+
+```{r}
+GAZ$дата.замера <- dates_GAZ
+```
+
+```{r}
+str(GAZ)
+```
+
