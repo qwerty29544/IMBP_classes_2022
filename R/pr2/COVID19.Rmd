@@ -1,0 +1,72 @@
+---
+title: "COVID"
+author: "Юрченков Иван Александрович"
+date: "25 02 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r download}
+COVID19 <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
+```
+
+```{r}
+head(COVID19)
+```
+
+```{r metadata}
+COVID_19_metadata <- COVID19[,1:4]
+# Добавим столбцы к датафрейму
+
+COVID_19_metadata$Sum_ills <- rowSums(COVID19[, -(1:4)])
+
+COVID_19_metadata$Mean_ills <- apply(X = COVID19[, -(1:4)], # Данные
+                                     MARGIN = 1,            # Измерения
+                                     FUN = mean)            # Функция
+
+COVID_19_metadata$Std_ills <- apply(X = COVID19[, -(1:4)], # Данные
+                                    MARGIN = 1,            # Измерения
+                                    FUN = sd)            # Функция
+
+COVID_19_metadata$Country.Province <- paste(COVID_19_metadata$Country.Region, 
+                                             COVID_19_metadata$Province.State,
+                                             sep = ":")
+
+COVID_19_metadata <- COVID_19_metadata[, c(8, 3:7)]
+
+View(COVID_19_metadata)
+
+# Пример Apply
+result <- apply(X = COVID19[, -(1:4)],
+                MARGIN = 2,
+                FUN = function(x) sd(x + x**2 - exp(x ** 0.01)))
+
+
+
+result
+```
+
+```{r useful functions}
+head(COVID19)
+
+is.na(COVID19)
+
+COVID19[is.na((COVID19)), ]
+```
+
+
+
+```{r}
+plot(x = 1:764, 
+     y = log(diff(as.numeric(COVID19[COVID19$Country.Region == "Russia", -(1:4)]))), 
+     xlim = c(200, 764),
+     ylim = c(8, 13))
+```
+
+```{r}
+diff(as.numeric(COVID19[1, -(1:4)]))
+```
+
