@@ -3,6 +3,13 @@ title: "Тема №1. Введение в программирование на
 author: "Юрченков Иван Александрович"
 date: "`r Sys.Date()`"
 output: 
+  html_document: 
+    toc: yes
+    highlight: haddock
+    fig_width: 8
+    fig_height: 8
+    fig_caption: yes
+    theme: readable
   word_document: 
     toc: yes
     highlight: kate
@@ -10,12 +17,6 @@ output:
     fig_height: 8
     fig_caption: yes
     keep_md: yes
-  html_document:
-    toc: yes
-    highlight: haddock
-    fig_width: 8
-    fig_height: 8
-    fig_caption: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -149,11 +150,9 @@ cat(paste("Hello", "my", "friends", sep = "\n"))
 
 При выходе из R вас встретит уведомления отдельно о сохранении истории команд и о сохранении образа рабочей области. Сохранить вручную можно при помощи специальных функций из R:
 
-```{r history, echo=FALSE}
+```
 file_history = "history_of_commands.Rhistory"
 savehistory(file = file_history)
-
-save
 
 file_image = "objects_of_project.RData"
 save(file = file_image)
@@ -162,9 +161,8 @@ save(file = file_image)
 
 Загрузить записанную историю команд и переменные из соответствующих файлов можно с помощью команд:
 
-```{r load history, echo=FALSE}
-load(file = file_history)
-
+```
+loadHistory(file = file_history)
 load(file = file_image)
 ```
 
