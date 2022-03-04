@@ -10,6 +10,7 @@ library(magrittr)
 print(sum(1:26))
 
 
+
 (1:26) %>% 
     sum() %>% 
     print()
