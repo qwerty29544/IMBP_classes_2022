@@ -10,13 +10,6 @@ output:
     fig_height: 8
     fig_caption: yes
     theme: readable
-  word_document: 
-    toc: yes
-    highlight: kate
-    fig_width: 8
-    fig_height: 8
-    fig_caption: yes
-    keep_md: yes
 ---
 
 ```{r setup, include=FALSE}

@@ -1,0 +1,11 @@
+---
+title: "Практическое занятие №6. Группы перестановок"
+author: "Юрченков Иван Александрович"
+date: "14 03 2022"
+output: 
+  html_document: 
+    toc: yes
+    fig_width: 8
+    fig_height: 8
+---
+
