@@ -70,3 +70,31 @@ plot(x = 1:764,
 diff(as.numeric(COVID19[1, -(1:4)]))
 ```
 
+```{r}
+COVID19 <- read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
+```
+
+```{r}
+dates <- colnames(COVID19)[-c(1:4)]
+```
+
+```{r}
+dates <- gsub("X", "", dates)
+```
+
+```{r}
+dates <- as.Date(dates, format = "%m.%d.%y")
+```
+
+```{r}
+covid <- data.frame(dates, t(COVID19[,-c(1:4)]))
+```
+
+```{r}
+colnames(covid) <- paste(COVID19[[2]], COVID19[[1]], sep=".")
+```
+
+```{r}
+covid
+```
+

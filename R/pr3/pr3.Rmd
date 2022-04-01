@@ -1,0 +1,62 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+GAZ2 <- read.csv("https://raw.githubusercontent.com/qwerty29544/RpracticeBook/master/2Data/01FlatTables/GAZ.csv", 
+                 header = T, 
+                 sep = "\t", 
+                 encoding = "UTF-8", 
+                 dec = ",")
+head(GAZ2)
+```
+
+
+```{r}
+colnames(GAZ2) <- c("Date", "Pressure", "Temp.Cels", "GAZ.m3.day", 
+                    "Cond.m3.day", "Water.m3.day", "ID", "Bush", "Group")
+head(GAZ2)
+```
+
+```{r}
+GAZ2$Pressure <- sapply(GAZ2$Pressure, function(x) ifelse(x > 120, x/10, x))
+GAZ2$GAZ.m3.day <- sapply(GAZ2$GAZ.m3.day, function(x) ifelse(x < 1000, x * 1000, x))
+GAZ2$Temp.Cels <- sapply(GAZ2$Temp.Cels, function(x) ifelse(x > 200, x / 10, x))
+
+GAZ2 <- GAZ2 %>% 
+            dplyr::group_by(ID) %>% 
+            tidyr::fill(Cond.m3.day, .direction = "up") %>% 
+            tidyr::fill(Water.m3.day, .direction = "up") %>% 
+            tidyr::fill(Temp.Cels, .direction = "up") %>% 
+            tidyr::fill(Pressure, .direction = "up")
+
+GAZ2 <- GAZ2 %>% 
+            dplyr::mutate(Date = as.Date.character(Date, format = "%d/%m/%Y"))
+
+head(GAZ2)
+```
+
+
+```{r}
+GAZ2 <- na.omit(GAZ2)
+```
+
+
+```{r}
+GAZ2 %>% 
+    dplyr::filter(Bush == "КП 3") %>% 
+    ggplot(aes(x = Pressure, y = Temp.Cels, col = ID)) +
+        geom_point() + 
+        facet_wrap(~ID)
+```
+
+
