@@ -86,6 +86,62 @@ length(as.matrix(ts.df$AAPL.Close)[1:(1 + 10 + 1), 1])
 
 
 ```{r}
+sliding_window <- function(numeric_vector, window_elements = 10) {
+  rows_matrix <- length(numeric_vector) - window_elements + 1
+  cols_matrix <- window_elements
+    
+  result_matrix <- matrix(nrow = rows_matrix, ncol = cols_matrix)
+  
+  for (index in 1:rows_matrix) {
+    result_matrix[index, ] <- numeric_vector[index:(index - 1 + window_elements)]   
+  }
+  
+  return(result_matrix)
+}
+```
+
+
+```{r}
+lin_reg <- function(X, y) {
+  X <- cbind(1, as.matrix(X))
+  y <- as.matrix(y)
+  w <- pracma::inv(t(X) %*% X) %*% t(X) %*% y
+  fit <- X %*% w
+  
+  rownames(w)[1] <- "bias"
+  return(list(parameters = w, fiited = fit))
+}
+
+
+lin_reg_ridge <- function(X, y, alpha = 0) {
+  X <- cbind(1, as.matrix(X))
+  y <- as.matrix(y)
+  w <- pracma::inv(t(X) %*% X + alpha * diag(1, nrow = ncol(X))) %*% t(X) %*% y
+  fit <- X %*% w
+  
+  rownames(w)[1] <- "bias"
+  return(list(parameters = w, fiited = fit))
+}
+
+```
+
+
+```{r}
+model <- lin_reg(mtcars[, c(1, 3, 4)], mtcars[, c(5, 6)])
+model_ridge <- lin_reg_ridge(mtcars[, c(1, 3, 4, 5, 6)], mtcars[, c(7)], alpha = 0.2)
+
+plot(mtcars$wt, mtcars$qsec, col = "blue", cex = I(0.8), pch = 8)
+points(mtcars$wt, model_ridge$fiited[, 1], col = "green2", cex = I(0.8), pch = 7)
+segments(x0 = mtcars$wt, x1 = mtcars$wt, y0 = mtcars$qsec, y1 = model_ridge$fiited[, 1], col = "green", lwd = I(0.5))
+
+plot(model_ridge$fiited[, 1], mtcars$qsec, col = "blue", cex = I(0.8), pch = 8)
+lines(model_ridge$fiited[, 1], model_ridge$fiited[, 1], col = "red", lwd = I(0.6))
+segments(x0 = model_ridge$fiited[, 1], x1 = model_ridge$fiited[, 1], y0 = mtcars$qsec, y1 = model_ridge$fiited[, 1], col = "green", lwd = I(0.5))
+```
+
+
+
+```{r}
 cut_window <- function(data, history = 10, forward = 1) {
     rows <- nrow(data) - history - forward
     result_matrix <- matrix(nrow = rows, ncol = history + forward)
