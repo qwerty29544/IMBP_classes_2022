@@ -8,6 +8,7 @@ output: html_notebook
 library(tidyr)
 library(dplyr)
 library(ggplot2)
+library(lubridate)
 ```
 
 
@@ -40,7 +41,11 @@ GAZ2 <- GAZ2 %>%
             tidyr::fill(Pressure, .direction = "up")
 
 GAZ2 <- GAZ2 %>% 
-            dplyr::mutate(Date = as.Date.character(Date, format = "%d/%m/%Y"))
+            dplyr::mutate(Date = as.Date.character(Date, format = "%d/%m/%Y"),
+                          Weekday = lubridate::wday(Date),
+                          Day = lubridate::day(Date),
+                          Month = lubridate::month(Date),
+                          Year = lubridate::year(Date))
 
 head(GAZ2)
 ```
@@ -52,11 +57,102 @@ GAZ2 <- na.omit(GAZ2)
 
 
 ```{r}
+# Фильтрация наблюдений по датам
 GAZ2 %>% 
-    dplyr::filter(Bush == "КП 3") %>% 
-    ggplot(aes(x = Pressure, y = Temp.Cels, col = ID)) +
-        geom_point() + 
-        facet_wrap(~ID)
+    dplyr::filter(Date >= as.Date("2018-01-01") & Date < as.Date("2019-01-01"))
+```
+
+
+```{r}
+unique(GAZ2$Bush)
+```
+
+
+```{r}
+GAZ2 %>% 
+    dplyr::filter(Bush == "КП 12") %>% 
+    ggplot2::ggplot(aes(x = Pressure, y = Temp.Cels, col = ID)) +
+    ggplot2::geom_point() + 
+    ggplot2::facet_wrap(~ID, nrow = 4, ncol = 4)
+```
+
+
+```{r}
+GAZ2 %>% 
+    dplyr::filter(ID == "1039") %>%  
+    ggplot2::ggplot(aes(x = Date, y = GAZ.m3.day)) +
+    ggplot2::geom_point() + 
+    ggplot2::geom_line() + 
+    ggplot2::theme_bw() + 
+    ggplot2::scale_x_date(name = "Dates", 
+                          breaks = seq.Date(from = as.Date("2013-01-01"), 
+                                            to = as.Date("2020-01-01"), 
+                                            by = "year")) + 
+    ggplot2::scale_y_continuous(n.breaks = 10)
+```
+
+
+```{r}
+GAZ2 <- GAZ2 %>% 
+            dplyr::mutate(Num_Dates = as.numeric(Date))
+
+head(GAZ2)
+```
+
+
+```{r}
+model_lm_305 <- GAZ2 %>% 
+                    dplyr::filter(ID == "305") %>% 
+                    lm(formula = log(GAZ.m3.day) ~ Num_Dates)
+
+predictions <- GAZ2 %>% 
+                    dplyr::filter(ID == "305") %>%
+                    dplyr::select(Num_Dates) %>% 
+                    predict.lm(object = model_lm_305) %>% 
+                    exp()
+```
+
+
+```{r}
+GAZ2 %>% 
+    dplyr::filter(ID == "305") %>%  
+    ggplot2::ggplot(aes(x = Date, y = GAZ.m3.day)) +
+    ggplot2::geom_point(col = "blue") + 
+    ggplot2::geom_line(col = "blue") + 
+    ggplot2::theme_bw() + 
+    ggplot2::scale_x_date(name = "Dates", 
+                          breaks = seq.Date(from = as.Date("2013-01-01"), 
+                                            to = as.Date("2020-01-01"), 
+                                            by = "year")) + 
+    ggplot2::scale_y_continuous(n.breaks = 10) +
+    ggplot2::geom_line(y = predictions, col = "red")
+```
+
+
+```{r}
+model_305 <- GAZ2 %>% 
+                    dplyr::filter(ID == "305") %>% 
+                    lm(formula = GAZ.m3.day ~ Day + Weekday + Month + Year + 
+                           Water.m3.day + Cond.m3.day + Temp.Cels + Pressure)
+
+predictions <- GAZ2 %>% 
+                    dplyr::filter(ID == "305") %>%
+                    predict.lm(object = model_305)
+```
+
+
+```{r}
+plot(x = GAZ2$Date[GAZ2$ID == "305"], y = GAZ2$GAZ.m3.day[GAZ2$ID == "305"], col = "red", pch = 19)
+lines(x = GAZ2$Date[GAZ2$ID == "305"], y = predictions, type = "o", col = "blue")
+```
+
+
+
+```{r}
+GAZ2 %>% 
+    dplyr::filter(GAZ.m3.day != Inf) %>% 
+    dplyr::select(GAZ.m3.day) %>% 
+    max()
 ```
 
 
