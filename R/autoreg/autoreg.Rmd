@@ -1,0 +1,108 @@
+---
+title: "ARIMA"
+author: "Юрченков Иван Александрович"
+date: "15 04 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(quantmod)
+```
+
+```{r}
+quantmod::getSymbols(Symbols = "AAPL")
+```
+
+
+
+```{r}
+ts.df <- data.frame(get("AAPL"))
+ts.df$Date <- as.Date.character(rownames(ts.df), format = "%Y-%m-%d")
+ts.df$Num_Date <- as.numeric(ts.df$Date)
+head(ts.df)
+```
+
+
+```{r}
+plot(x = ts.df$Date, y = log(ts.df$AAPL.Close), type = "o")
+grid()
+```
+
+
+Вытаскиваю из графика линейный тренд
+
+
+```{r}
+Y <- log(ts.df$AAPL.Close)
+X <- ts.df$Num_Date
+model_lm <- lm(Y ~ X)
+model_lm
+```
+
+```{r}
+plot(X, Y, type = "o", col = "blue3", pch = 19, cex = I(0.5))
+abline(a = model_lm$coefficients[1], b = model_lm$coefficients[2], col ="red")
+grid()
+```
+
+
+```{r}
+Y_w_t <- Y - model_lm$coefficients[1] - model_lm$coefficients[2] * X
+plot(x = X, y = Y_w_t, col = "purple", type = "o", cex = I(0.5), pch = 19)
+```
+
+
+```{r}
+N = 120
+arima_model <- arima(x = Y_w_t[1:(length(Y_w_t) - 120)], order = c(30, 0, 0))
+```
+
+```{r}
+arima_model
+```
+
+```{r}
+
+preds = predict(arima_model, n.ahead = 120)
+
+plot(c(Y_w_t[1:(length(Y_w_t) - 120)], as.numeric(preds$pred)), 
+     type = "o", 
+     col = "red", 
+     cex = I(0.5), 
+     xlim = c(3000, 4000))
+lines(Y_w_t, 
+      type = "o", 
+      col = "blue", 
+      cex = I(0.5))
+```
+
+```{r}
+length(as.matrix(ts.df$AAPL.Close)[1:(1 + 10 + 1), 1])
+```
+
+
+```{r}
+cut_window <- function(data, history = 10, forward = 1) {
+    rows <- nrow(data) - history - forward
+    result_matrix <- matrix(nrow = rows, ncol = history + forward)
+    for (index in 1:rows) {
+        result_matrix[index, ] <- data[index:(index - 1 + history + forward), 1]
+    }
+    return(result_matrix)
+}
+
+
+his = 40
+forwd = 5
+data_X <- cut_window(data = as.matrix(ts.df$AAPL.Close), history = his, forward = forwd)
+X <- cbind(1, data_X[,1:his])
+Y <- data_X[,(his+1):(his + forwd)]
+
+w = pracma::pinv(t(X) %*% X) %*% t(X) %*% Y
+w
+```
+
