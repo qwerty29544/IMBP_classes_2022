@@ -2,12 +2,24 @@
 title: "ARIMA"
 author: "Юрченков Иван Александрович"
 date: "15 04 2022"
-output: html_document
+mainfont: 'Noto Sans'
+output: 
+  pdf_document: 
+    toc: yes
+    fig_width: 8
+    fig_height: 8
+    fig_caption: yes
+    number_sections: yes
+    latex_engine: xelatex
+    highlight: haddock
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+## **Загрузка данных с yahoo.finance**
+
 
 ```{r}
 library(quantmod)
@@ -25,6 +37,7 @@ ts.df$Date <- as.Date.character(rownames(ts.df), format = "%Y-%m-%d")
 ts.df$Num_Date <- as.numeric(ts.df$Date)
 head(ts.df)
 ```
+
 
 
 ```{r}
@@ -56,29 +69,7 @@ plot(x = X, y = Y_w_t, col = "purple", type = "o", cex = I(0.5), pch = 19)
 ```
 
 
-```{r}
-N = 120
-arima_model <- arima(x = Y_w_t[1:(length(Y_w_t) - 120)], order = c(30, 0, 0))
-```
 
-```{r}
-arima_model
-```
-
-```{r}
-
-preds = predict(arima_model, n.ahead = 120)
-
-plot(c(Y_w_t[1:(length(Y_w_t) - 120)], as.numeric(preds$pred)), 
-     type = "o", 
-     col = "red", 
-     cex = I(0.5), 
-     xlim = c(3000, 4000))
-lines(Y_w_t, 
-      type = "o", 
-      col = "blue", 
-      cex = I(0.5))
-```
 
 ```{r}
 length(as.matrix(ts.df$AAPL.Close)[1:(1 + 10 + 1), 1])
@@ -102,21 +93,49 @@ sliding_window <- function(numeric_vector, window_elements = 10) {
 
 
 ```{r}
-lin_reg <- function(X, y) {
-  X <- cbind(1, as.matrix(X))
-  y <- as.matrix(y)
-  w <- pracma::inv(t(X) %*% X) %*% t(X) %*% y
-  fit <- X %*% w
-  
-  rownames(w)[1] <- "bias"
-  return(list(parameters = w, fiited = fit))
+l_norm <- function(numeric_vector, p = 2) {
+    return( sum( abs(numeric_vector)^p )^(1/p) )
 }
 
 
-lin_reg_ridge <- function(X, y, alpha = 0) {
+lin_reg <- function(X, y, l2_alpha = 0, batch_size = 0, shuffle = FALSE, alpha = 10e-3, max_iter = 10e4) {
   X <- cbind(1, as.matrix(X))
   y <- as.matrix(y)
-  w <- pracma::inv(t(X) %*% X + alpha * diag(1, nrow = ncol(X))) %*% t(X) %*% y
+  
+  if (is.null(colnames(y))) {
+      colnames(y) <- paste0("Y", 1:ncol(y))
+  }
+  
+  if (is.null(colnames(X))) {
+      colnames(X) <- c("bias", paste0("X", 1:ncol(X)))
+  }
+  
+  if (batch_size == 0) {
+    w <- pracma::inv(t(X) %*% X + l2_alpha * diag(1, nrow = ncol(X))) %*% t(X) %*% y      
+  } else {
+    w <- matrix(data = 1, 
+                ncol = ncol(y), 
+                nrow = ncol(X) + 1)
+    colnames(w) <- colnames(y)
+    rownames(w) <- colnames(X)
+    
+    
+    for (iter in 1:max_iter) {
+        for (out_index in 1:ncol(y)) {
+            if (shuffle) {
+                rows_sample <- sample(x = 1:nrow(X), size = nrow(X), replace = FALSE)
+                X[1:nrow(X), ] <- X[rows_sample, ]
+            }
+            
+            # Необходим цикл по батчам
+            w[, out_index] = w[, out_index] - alpha    
+        }
+    }
+    
+  }
+  
+  
+  
   fit <- X %*% w
   
   rownames(w)[1] <- "bias"
